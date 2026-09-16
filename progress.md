@@ -35,6 +35,7 @@ Done:
 - [x] Plan view (for Gautam): pick a dish per weekday, save, share as a link; one-day override with its own link; make-your-own template table.
 - [x] Language toggle (हिंदी ⇄ English) in the header, remembered per phone.
 - [x] Mobile layout tested at ~375px width in the in-app browser.
+- [x] Pre-recorded Hindi audio (Sarvam Priya) for every name/ingredient/step; per-step ▶ and whole-recipe playback tested locally.
 
 Not done / open:
 - [x] **Hosting.** Vercel, imported from the GitHub repo; every push to `main` redeploys.
@@ -47,8 +48,10 @@ Not done / open:
 ## Voice: pre-recorded Hindi audio (Sarvam AI Bulbul)
 
 Decision 2026-09-16: instead of the phone's built-in voice, generate one MP3 per clip once and ship
-the files with the site. Provider: **Sarvam AI** (`bulbul:v2`, female speaker `anushka`, pace 0.9).
-~280 clips, ~11k characters, a few cents.
+the files with the site. Provider: **Sarvam AI** (`bulbul:v3`, female speaker `priya`, pace 0.9;
+`bulbul:v2` is deprecated and the API rejects it). 280 clips, ~11k characters, 19 MB, generated
+2026-09-16 and committed. To try another voice: `python3 scripts/gen-audio.py --speaker ritu --force`
+(other v3 female voices: neha, pooja, simran, kavya), then commit + push.
 
 - `scripts/gen-audio.py` — reads `js/data.js` (via macOS `osascript` JavaScriptCore, no Node needed),
   calls `POST https://api.sarvam.ai/text-to-speech`, writes `audio/<recipe-id>/{name,ing-N,step-N}.mp3`
@@ -149,6 +152,6 @@ Machine notes: no `gh`, `node`, `brew` or `vercel` CLI installed. Git pushes ove
 - 2026-09-16 · Default weekly rotation chosen by the agent for variety (Mon curry, Tue basil chicken, Wed rajma, Thu tikka masala, Fri sriracha, Sat biryani, Sun fish). Gautam should change it from the Plan screen.
 
 ## Next session checklist
-1. Open https://diya-gamma.vercel.app/ on a real phone, test 🔊 read-aloud in Hindi (iOS voice "Lekha", Android "Google हिन्दी").
+1. Open https://diya-gamma.vercel.app/ on a real phone, tap 🔊 and a step ▶ — confirm the Sarvam voice plays (not the robotic phone voice). Gautam to decide whether to keep "Priya" or switch voice.
 2. Gautam sets the real weekly plan on the Plan screen and shares the link to Diya.
 3. Review Hindi wording with Diya; fix in `js/data.js`, commit, push.
