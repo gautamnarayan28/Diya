@@ -14,11 +14,11 @@ Usage
 What it does
   1. Evaluates js/data.js with macOS JavaScriptCore (osascript) to get the recipes as JSON.
      (No Node needed. On Linux, install node and swap eval_data_js() for a node one-liner.)
-  2. For each recipe builds one clip per: recipe name, each ingredient (qty + name), each step.
-     Hindi only for now — the `hi` strings.
+  2. For each recipe builds one clip per: recipe name and each step. (Ingredients are not
+     voiced — decided 2026-09-16, they were not useful and doubled the size.) Hindi only.
   3. Skips clips whose text hash is unchanged (tracked in audio/manifest.js).
-  4. Writes audio/<recipe-id>/{name,ing-N,step-N}.mp3 and audio/manifest.js, which the
-     web app reads (window.AUDIO) to know which clips exist.
+  4. Writes audio/<recipe-id>/{name,step-N}.mp3 and audio/manifest.js, which the
+     web app reads (window.AUDIO) to know which clips exist. Orphaned clips are deleted.
 
 Only standard library is used.
 """
@@ -69,10 +69,6 @@ def save_manifest(m):
 def clips_for(recipe):
     """Yield (key, hindi_text) for one recipe."""
     yield "name", recipe["name"]["hi"]
-    for i, ing in enumerate(recipe["ingredients"]):
-        if "group" in ing:
-            continue
-        yield f"ing-{i}", f'{ing["qty"]["hi"]} {ing["name"]["hi"]}'
     for i, step in enumerate(recipe["steps"]):
         yield f"step-{i}", step["hi"]
 
@@ -154,7 +150,8 @@ def main():
             print(f"  {rid}/{key}: {text[:60]}{'…' if len(text) > 60 else ''}")
         return
     if not todo:
-        print("Nothing to do — audio is up to date.")
+        print("Nothing to generate — audio is up to date.")
+        prune(menu, manifest)
         return
 
     key = get_key()
@@ -168,17 +165,33 @@ def main():
         save_manifest(manifest)          # save after every clip so a crash loses nothing
         time.sleep(0.3)                  # be polite to the rate limit
 
-    # drop manifest entries whose text no longer exists
+    prune(menu, manifest)
+
+
+def prune(menu, manifest):
+    """Drop manifest entries and delete mp3 files that no longer correspond to a clip."""
     valid = {r["id"]: {k for k, _ in clips_for(r)} for r in menu["recipes"]}
+    removed = 0
     for rid in list(manifest):
         if rid not in valid:
             del manifest[rid]; continue
         for k in list(manifest[rid]):
             if k not in valid[rid]:
                 del manifest[rid][k]
+    if os.path.isdir(AUDIO_DIR):
+        for rid in os.listdir(AUDIO_DIR):
+            d = os.path.join(AUDIO_DIR, rid)
+            if not os.path.isdir(d):
+                continue
+            for f in os.listdir(d):
+                key = f[:-4] if f.endswith(".mp3") else None
+                if key is None or rid not in valid or key not in valid[rid]:
+                    os.remove(os.path.join(d, f)); removed += 1
+            if not os.listdir(d):
+                os.rmdir(d)
     save_manifest(manifest)
     size = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(AUDIO_DIR) for f in fs)
-    print(f"Done. audio/ is now {size / 1e6:.1f} MB.")
+    print(f"Done. Removed {removed} stale clip(s). audio/ is now {size / 1e6:.1f} MB.")
 
 
 if __name__ == "__main__":

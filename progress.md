@@ -145,7 +145,18 @@ Vercel redeploys `main` in ~20 s. Live URL: https://diya-gamma.vercel.app/
 Machine notes: no `gh`, `node`, `brew` or `vercel` CLI installed. Git pushes over SSH as GitHub user
 `gautamnarayan28` (key in `~/.ssh/id_ed25519`). Vercel is managed from the web dashboard.
 
+## Themes (colour schemes)
+
+All colours are CSS variables in `css/style.css`; the base `:root` is the "warm" theme and
+`[data-theme="…"]` blocks override only variables. Available: `warm`, `slate`, `forest`, `ink`, `midnight`.
+`js/app.js` sets `<html data-theme>` from `DEFAULT_THEME` (or `?theme=NAME` in the URL, remembered per phone).
+To change the site's look: edit `DEFAULT_THEME` in `js/app.js`. To compare all five side by side:
+run the dev server and open http://localhost:8766/dev/themes.html (dev only, harmless if deployed).
+2026-09-16: Gautam asked for sharper design + colour options; baseline was tightened (smaller radii,
+hairline card borders, uppercase eyebrows, square-ish pills) and the five themes were built. Awaiting his pick.
+
 ## Decisions log
+- 2026-09-16 · Ingredient audio removed (kept name + steps only): not useful to Diya, halved audio size (19 → 11 MB).
 - 2026-09-16 · Static site over an app/backend: zero cost, one link, editable by any agent. Sync via URL parameters instead of a database.
 - 2026-09-16 · Hindi primary / English secondary on the same screen instead of a hard language switch, so Gautam and Diya can read the same page together. A toggle swaps which is big.
 - 2026-09-16 · Quantities kept exactly as the PDF (grams, ml, tsp/tbsp). Where the PDF was ambiguous, small practical notes were added (e.g. soak/boil dry chickpeas; "cloves" in biryani method taken as laung).

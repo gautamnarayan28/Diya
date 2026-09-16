@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Theme comparison — dev only</title>
+<style>
+  body { margin: 0; padding: 16px; background: #d7d7d7; font: 14px/1.4 -apple-system, system-ui, sans-serif; color: #222; }
+  h1 { font-size: 16px; margin: 0 0 12px; }
+  .row { display: flex; gap: 14px; margin-bottom: 18px; }
+  .phone { width: 375px; }
+  .phone h2 { font-size: 15px; margin: 0 0 6px; }
+  .phone p { margin: 0 0 8px; color: #555; font-size: 12px; min-height: 32px; }
+  iframe { width: 375px; height: 760px; border: 0; border-radius: 22px; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+</style>
+</head>
+<body>
+<h1>Theme comparison (served from the local dev server; not part of the site)</h1>
+<div class="row" id="row1"></div>
+<div class="row" id="row2"></div>
+<script>
+  const themes = [
+    ["warm", "A · Warm (current)", "Terracotta header, cream background."],
+    ["slate", "B · Slate & Saffron", "Near-black header, stone background, amber buttons with dark text."],
+    ["forest", "C · Forest", "Deep green header, paper background, green accent."],
+    ["ink", "D · Ink & Tomato", "White editorial look, hairlines, one red accent."],
+    ["midnight", "E · Midnight", "Dark mode, orange accent."]
+  ];
+  const base = location.origin;
+  const mk = (route) => themes.map(([id, name, desc]) => `
+    <div class="phone"><h2>${name}</h2><p>${desc}</p>
+      <iframe src="${base}/index.html?theme=${id}${route}"></iframe></div>`).join("");
+  document.getElementById("row1").innerHTML = mk("#/");
+  document.getElementById("row2").innerHTML = mk("#/recipe/chicken-curry");
+</script>
+</body>
+</html>
