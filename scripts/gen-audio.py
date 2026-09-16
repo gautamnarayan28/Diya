@@ -30,8 +30,8 @@ AUDIO_DIR = os.path.join(ROOT, "audio")
 MANIFEST = os.path.join(AUDIO_DIR, "manifest.js")
 API_URL = "https://api.sarvam.ai/text-to-speech"
 
-DEFAULT_MODEL = "bulbul:v2"
-DEFAULT_SPEAKER = "anushka"   # female, bulbul:v2. v2 females: anushka, manisha, vidya, arya
+DEFAULT_MODEL = "bulbul:v3"   # bulbul:v2 was deprecated by Sarvam (Sep 2026)
+DEFAULT_SPEAKER = "priya"     # female, bulbul:v3. Other v3 female voices: ritu, neha, pooja, simran, kavya
 DEFAULT_PACE = 0.9            # a touch slower than normal — these are cooking instructions
 LANG = "hi-IN"
 
