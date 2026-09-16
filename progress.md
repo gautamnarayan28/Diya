@@ -44,6 +44,22 @@ Not done / open:
 - [ ] Optional: "add to home screen" icon (a `manifest.json` + 192/512px PNG) so it feels like an app.
 - [ ] Optional: shopping-list view for the week (sum ingredients across the 7 planned dishes).
 
+## Voice: pre-recorded Hindi audio (Sarvam AI Bulbul)
+
+Decision 2026-09-16: instead of the phone's built-in voice, generate one MP3 per clip once and ship
+the files with the site. Provider: **Sarvam AI** (`bulbul:v2`, female speaker `anushka`, pace 0.9).
+~280 clips, ~11k characters, a few cents.
+
+- `scripts/gen-audio.py` — reads `js/data.js` (via macOS `osascript` JavaScriptCore, no Node needed),
+  calls `POST https://api.sarvam.ai/text-to-speech`, writes `audio/<recipe-id>/{name,ing-N,step-N}.mp3`
+  and `audio/manifest.js` (`window.AUDIO`, recipe id → clip key → text hash). Re-running only
+  regenerates clips whose Hindi text changed. `--dry-run`, `--force`, `--recipe ID`, `--speaker`, `--model`.
+- API key: `SARVAM_API_KEY` env var or a `.sarvam_key` file in the project root (**git-ignored**; never commit it).
+- App (`js/app.js`): if `window.AUDIO` has clips for the recipe and the UI is in Hindi, the 🔊 button plays
+  name → ingredients → steps in sequence and highlights the current step; each step also gets its own ▶.
+  Otherwise it falls back to browser `speechSynthesis`. English audio is not generated (Gautam reads).
+- Workflow after editing Hindi text: `python3 scripts/gen-audio.py && git add -A && git commit && git push`.
+
 ## How the "same link for both" sync works (no server)
 
 The site is static, so the weekly plan lives in `localStorage` on each phone.
@@ -66,7 +82,10 @@ dinner-menu/
 ├── index.html          shell: header, <main id="app">, bottom tabs, script tags
 ├── css/style.css       all styles, mobile-first, CSS variables at the top
 ├── js/data.js          THE CONTENT. window.MENU = { defaultPlan, days, recipes[14], template[7] }
-├── js/app.js           hash router, views, planner, share links, text-to-speech, localStorage
+├── js/app.js           hash router, views, planner, share links, audio playback + TTS fallback, localStorage
+├── audio/manifest.js   generated: which clips exist (window.AUDIO)
+├── audio/<id>/*.mp3    generated Hindi clips (Sarvam) — commit them, they are part of the site
+├── scripts/gen-audio.py  regenerates audio/ from js/data.js (needs Sarvam key)
 ├── source/…Menu.pdf    the trainer's original document (source of truth)
 ├── .claude/launch.json local dev server config (python http.server on :8765)
 ├── progress.md         this file

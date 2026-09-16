@@ -162,6 +162,15 @@ h2 { font-size: 20px; margin: 22px 0 10px; }
 .steps .num::before { content: counter(step); }
 .steps .txt { font-size: 19px; line-height: 1.5; }
 .steps .txt .sub { display: block; margin-top: 4px; font-size: 15px; }
+.steps.has-audio li { grid-template-columns: 44px 1fr 48px; }
+.play-step {
+  width: 44px; height: 44px; border-radius: 50%; align-self: start;
+  border: 2px solid var(--brand); background: #fff; color: var(--brand-dark);
+  font-size: 16px; cursor: pointer; padding: 0; padding-left: 3px;
+}
+.play-step:active { background: var(--brand-soft); }
+.steps li.playing { background: var(--brand-soft); border-radius: 12px; }
+.steps li.playing .play-step { background: var(--brand); color: #fff; }
 .steps li.done { opacity: 0.55; }
 .steps li.done .num { background: var(--green); }
 .steps li.done .num::before { content: "✓"; }
