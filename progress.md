@@ -1,5 +1,8 @@
 # Dinner Menu — project progress
 
+**Live site: https://diya-gamma.vercel.app/**  ·  Repo: https://github.com/gautamnarayan28/Diya
+Deploys automatically from `main` via Vercel (no build step). Share the live URL with Diya.
+
 > Hand-off file. Any coding agent (or human) should be able to pick this up cold.
 > Keep this file updated at the end of every working session.
 
@@ -22,7 +25,7 @@ Both Gautam and Diya open the **same link** on their phones.
 
 ## Current status (2026-09-16)
 
-**v1 built, running locally. Not yet deployed / not yet shared with Diya.**
+**v1 built and deployed to https://diya-gamma.vercel.app/ . Not yet shared with Diya.**
 
 Done:
 - [x] Extracted all 14 recipes + the "make your own" template from the PDF into `js/data.js` (Hindi + English).
@@ -34,7 +37,8 @@ Done:
 - [x] Mobile layout tested at ~375px width in the in-app browser.
 
 Not done / open:
-- [ ] **Hosting.** Needs a public URL to share. Recommended: GitHub Pages (free, one-time setup) — see "Deploying" below. Netlify Drop is the zero-git alternative.
+- [x] **Hosting.** Vercel, imported from the GitHub repo; every push to `main` redeploys.
+- [ ] Send the link to Diya and have her "Add to Home Screen".
 - [ ] Confirm Diya's preferred language. Hindi is assumed. If she reads Kannada/Tamil/etc. better, add a third language key (e.g. `kn`) to every `{en, hi}` object in `js/data.js` and to the `UI` strings in `js/app.js`.
 - [ ] Sanity-check Hindi phrasing with Gautam/Diya on a real phone (translations were written by the agent, not a native reviewer).
 - [ ] Optional: "add to home screen" icon (a `manifest.json` + 192/512px PNG) so it feels like an app.
@@ -105,15 +109,19 @@ Tested in the in-app browser at 375px: today / recipe / all / plan views, langua
 `?p=` weekly-plan link, `?d=&dish=` one-day link (toast + week strip update). Read-aloud not
 testable in the in-app browser — check on a real phone.
 
-## Deploying (todo)
+## Deploying
 
-Option A — GitHub Pages (recommended, keeps history):
-1. `git init && git add -A && git commit -m "Dinner menu v1"`
-2. Create a repo (private is fine; Pages can still be public) and push.
-3. Settings → Pages → Deploy from branch `main`, folder `/ (root)`.
-4. URL will be `https://<user>.github.io/<repo>/`. Send that to Diya; suggest "Add to Home Screen".
+Done on 2026-09-16. Vercel project imported from GitHub `gautamnarayan28/Diya` (note: repo is named
+`Diya`, local folder is `dinner-menu`). Framework preset "Other", no build command, root output.
 
-Option B — Netlify Drop: drag the folder onto https://app.netlify.com/drop . Instant URL, but re-drag on every change.
+To ship a change:
+```bash
+git add -A && git commit -m "describe change" && git push
+```
+Vercel redeploys `main` in ~20 s. Live URL: https://diya-gamma.vercel.app/
+
+Machine notes: no `gh`, `node`, `brew` or `vercel` CLI installed. Git pushes over SSH as GitHub user
+`gautamnarayan28` (key in `~/.ssh/id_ed25519`). Vercel is managed from the web dashboard.
 
 ## Decisions log
 - 2026-09-16 · Static site over an app/backend: zero cost, one link, editable by any agent. Sync via URL parameters instead of a database.
@@ -122,6 +130,6 @@ Option B — Netlify Drop: drag the folder onto https://app.netlify.com/drop . I
 - 2026-09-16 · Default weekly rotation chosen by the agent for variety (Mon curry, Tue basil chicken, Wed rajma, Thu tikka masala, Fri sriracha, Sat biryani, Sun fish). Gautam should change it from the Plan screen.
 
 ## Next session checklist
-1. Ask Gautam which hosting he wants; deploy; put the URL at the top of this file.
-2. Open it on a real phone, test 🔊 read-aloud in Hindi (iOS voice "Lekha", Android "Google हिन्दी").
-3. Review Hindi wording with Diya; fix in `js/data.js`.
+1. Open https://diya-gamma.vercel.app/ on a real phone, test 🔊 read-aloud in Hindi (iOS voice "Lekha", Android "Google हिन्दी").
+2. Gautam sets the real weekly plan on the Plan screen and shares the link to Diya.
+3. Review Hindi wording with Diya; fix in `js/data.js`, commit, push.

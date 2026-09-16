@@ -1,5 +1,7 @@
 # 🍽️ Dinner Menu
 
+**Live: https://diya-gamma.vercel.app/**
+
 Mobile site that shows what's for dinner tonight, in Hindi and English, with the full 500 kcal recipe from the trainer's plan.
 
 - **आज / Today** — tonight's dish and the week at a glance
