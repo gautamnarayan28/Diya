@@ -8,12 +8,14 @@
      #/all           every recipe
      #/plan          Gautam's planner: weekly rotation, one-off override, share links
 
-   Shared state without a backend
-     The site is static. The weekly plan lives in localStorage on each phone.
-     To sync, the planner generates a link that carries the plan in the URL:
-       ?p=id,id,id,id,id,id,id      → saves as the weekly plan (Mon…Sun)
-       ?d=YYYY-MM-DD&dish=id        → saves a one-day override
-     When Diya opens such a link, the app stores it and cleans the URL.
+   Shared state
+     Primary: /api/plan (Vercel function + Upstash Redis, see api/plan.js). On load and whenever
+     the tab becomes visible the app pulls {plan, overrides}; every change on the Plan screen is
+     pushed with a PIN (asked once per device, kept in localStorage).
+     localStorage is the offline cache and the fallback when the API is unavailable (local dev
+     server, or storage not yet configured on Vercel).
+     Legacy link sync still works: ?p=id,…(7) sets the weekly plan, ?d=YYYY-MM-DD&dish=id a one-day
+     override; both are also pushed to the server if it is reachable.
    ============================================================ */
 
 (function () {
@@ -29,7 +31,8 @@
     lang: "dm.lang",
     plan: "dm.plan",
     overrides: "dm.overrides",
-    done: "dm.done"
+    done: "dm.done",
+    pin: "dm.pin"
   };
 
   /* ---------------- storage helpers ---------------- */
@@ -85,6 +88,10 @@
     changed: { hi: "आज बदला गया", en: "Changed for today" },
     template: { hi: "Make-your-own template (English)", en: "Make-your-own meal template" },
     kcal: { hi: "कैलोरी", en: "kcal" },
+    pinPrompt: { hi: "प्लान बदलने के लिए PIN डालें", en: "Enter the PIN to change the plan" },
+    synced: { hi: "सभी फ़ोन पर सेव हो गया ✓", en: "Saved to all phones ✓" },
+    syncFail: { hi: "सर्वर पर सेव नहीं हुआ — इस फ़ोन पर सेव है, बाद में फिर कोशिश करें", en: "Could not reach the server — saved on this phone only, try again later" },
+    noServer: { hi: "सर्वर से जुड़ा नहीं है — बदलाव सिर्फ़ इस फ़ोन पर हैं। लिंक भेजकर दूसरे फ़ोन पर भेजें।", en: "Not connected to the server — changes are on this device only. Use the share links to send them to another phone." },
     fileWarn: { hi: "यह पेज अभी फ़ाइल से खुला है। लिंक भेजने के लिए साइट को ऑनलाइन होस्ट करें (देखें progress.md)।", en: "This page is opened from a file. Host the site online before sharing links (see progress.md)." }
   };
   const u = key => UI[key][lang];
@@ -126,7 +133,55 @@
       history.replaceState(null, "", location.pathname + location.hash);
       if (msg) setTimeout(() => toast(msg), 300);
     }
+    return !!msg;
   }
+
+  /* ---------------- server sync (api/plan.js) ---------------- */
+  const API = /^https?:$/.test(location.protocol) ? "api/plan" : null;
+  let serverOk = false;                       // true once a GET has succeeded
+
+  function adoptState(s) {
+    let changed = false;
+    if (Array.isArray(s.plan) && s.plan.length === 7 && s.plan.every(id => byId[id]) && JSON.stringify(s.plan) !== JSON.stringify(plan)) {
+      plan = s.plan; save(LS.plan, plan); changed = true;
+    }
+    if (s.overrides && typeof s.overrides === "object" && JSON.stringify(s.overrides) !== JSON.stringify(overrides)) {
+      overrides = s.overrides; save(LS.overrides, overrides); changed = true;
+    }
+    return changed;
+  }
+  async function pullState() {
+    if (!API) return;
+    try {
+      const r = await fetch(API, { cache: "no-store" });
+      if (!r.ok) return;                      // 503 = storage not configured yet → local mode
+      const s = await r.json();
+      const first = !serverOk; serverOk = true;
+      if (adoptState(s) || (first && location.hash.startsWith("#/plan"))) route();
+    } catch (e) { /* offline — keep the local copy */ }
+  }
+  async function pushState() {
+    if (!API || !serverOk) return false;
+    let pin = load(LS.pin, "");
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin, plan, overrides }) });
+        if (r.status === 401) {
+          pin = (window.prompt(u("pinPrompt")) || "").trim();
+          if (!pin) return false;
+          continue;
+        }
+        if (!r.ok) { toast(u("syncFail")); return false; }
+        save(LS.pin, pin);
+        adoptState(await r.json());
+        toast(u("synced"));
+        return true;
+      } catch (e) { toast(u("syncFail")); return false; }
+    }
+    return false;
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullState(); });
+  setInterval(() => { if (document.visibilityState === "visible") pullState(); }, 5 * 60 * 1000);
 
   function applyTheme() {
     const t = load(LS.theme, DEFAULT_THEME);
@@ -251,6 +306,7 @@
     const overrideList = Object.keys(overrides).sort();
     return `<h1>${u("plan")}</h1>
       <p class="hint">${u("planHelp")}</p>
+      ${API && !serverOk ? `<div class="note">${u("noServer")}</div>` : ""}
       <div class="card">
         ${M.days.map((d, i) => `
           <div class="plan-row">
@@ -435,26 +491,26 @@
 
     if (parts[0] === "plan") {
       const readPlan = () => [...document.querySelectorAll("select[data-i]")].map(s => s.value);
-      document.getElementById("savePlan").onclick = () => { plan = sanitizePlan(readPlan()); save(LS.plan, plan); toast(u("saved")); };
-      document.getElementById("resetPlan").onclick = () => { plan = M.defaultPlan.slice(); save(LS.plan, plan); route(); toast(u("saved")); };
+      document.getElementById("savePlan").onclick = () => { plan = sanitizePlan(readPlan()); save(LS.plan, plan); toast(u("saved")); pushState(); };
+      document.getElementById("resetPlan").onclick = () => { plan = M.defaultPlan.slice(); save(LS.plan, plan); route(); toast(u("saved")); pushState(); };
       document.getElementById("sharePlan").onclick = () => {
-        plan = sanitizePlan(readPlan()); save(LS.plan, plan);
+        plan = sanitizePlan(readPlan()); save(LS.plan, plan); pushState();
         const lines = plan.map((id, i) => `${M.days[i].hi} – ${byId[id].emoji} ${byId[id].name.hi}`).join("\n");
         shareLink(`${baseUrl()}?p=${plan.join(",")}`, `🍽️ इस हफ़्ते का डिनर प्लान:\n${lines}\n\nलिंक खोलें 👇`);
       };
       const ovDate = document.getElementById("ovDate"), ovDish = document.getElementById("ovDish");
       document.getElementById("saveOverride").onclick = () => {
         if (!ovDate.value) return;
-        overrides[ovDate.value] = ovDish.value; save(LS.overrides, overrides); route(); toast(u("saved"));
+        overrides[ovDate.value] = ovDish.value; save(LS.overrides, overrides); route(); toast(u("saved")); pushState();
       };
       document.getElementById("shareOverride").onclick = () => {
         if (!ovDate.value) return;
-        overrides[ovDate.value] = ovDish.value; save(LS.overrides, overrides);
+        overrides[ovDate.value] = ovDish.value; save(LS.overrides, overrides); pushState();
         const r = byId[ovDish.value];
         shareLink(`${baseUrl()}?d=${ovDate.value}&dish=${r.id}`, `🍽️ ${ovDate.value} का डिनर: ${r.emoji} ${r.name.hi}\n\nलिंक खोलें 👇`);
       };
       const clr = document.getElementById("clearOverrides");
-      if (clr) clr.onclick = () => { overrides = {}; save(LS.overrides, overrides); route(); toast(u("saved")); };
+      if (clr) clr.onclick = () => { overrides = {}; save(LS.overrides, overrides); route(); toast(u("saved")); pushState(); };
     }
   }
 
@@ -468,9 +524,10 @@
   langBtn.addEventListener("click", () => { lang = other(); save(LS.lang, lang); applyLang(); route(); });
 
   /* ---------------- boot ---------------- */
-  absorbQuery();
+  const fromLink = absorbQuery();
   applyTheme();
   applyLang();
   window.addEventListener("hashchange", route);
   route();
+  pullState().then(() => { if (fromLink) pushState(); });   // a link-carried plan is shared onward too
 })();

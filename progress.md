@@ -63,10 +63,26 @@ the files with the site. Provider: **Sarvam AI** (`bulbul:v3`, female speaker `p
   Otherwise it falls back to browser `speechSynthesis`. English audio is not generated (Gautam reads).
 - Workflow after editing Hindi text: `python3 scripts/gen-audio.py && git add -A && git commit && git push`.
 
-## How the "same link for both" sync works (no server)
+## Sync between phones (added 2026-09-17)
 
-The site is static, so the weekly plan lives in `localStorage` on each phone.
-To sync, the Plan screen generates links that carry the data in the URL:
+Gautam changed the plan on his phone and it did not show on his laptop → real sync was needed.
+
+- `api/plan.js` — Vercel serverless function (CommonJS, no npm deps). `GET /api/plan` returns
+  `{plan, overrides, updatedAt}`; `POST /api/plan {pin, plan, overrides}` saves it. Storage is
+  **Upstash Redis** via REST, created from the Vercel dashboard (Project → Storage → Create Database →
+  Upstash Redis, free tier). Env vars are injected by Vercel; the function accepts either
+  `KV_REST_API_URL/TOKEN` or `UPSTASH_REDIS_REST_URL/TOKEN`. Set `PLAN_PIN` (plain env var) so only
+  Gautam can write; if unset, anyone with the URL can write.
+- App: pulls on load, when the tab becomes visible, and every 5 min; pushes on every Plan-screen change.
+  First push on a device prompts for the PIN and remembers it (`dm.pin` in localStorage).
+  If the API returns 503 (storage not configured) or is unreachable, the app silently stays in
+  local-only mode and the Plan screen shows a note.
+- Status: code pushed 2026-09-17; **Gautam must create the Upstash store + `PLAN_PIN` in Vercel** for
+  sync to go live. Verify with `curl https://diya-gamma.vercel.app/api/plan` (JSON, not 503).
+
+### Legacy link sync (still works, now also pushes to the server)
+
+The Plan screen generates links that carry the data in the URL:
 
 | Link | Effect when opened |
 |---|---|
