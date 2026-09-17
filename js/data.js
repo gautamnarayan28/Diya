@@ -88,7 +88,6 @@ window.MENU = {
         { group: { en: "Salad", hi: "सलाद" } },
         { icon: "🥬", qty: { en: "Handful", hi: "एक मुट्ठी" }, name: { en: "Rocket (arugula) leaves", hi: "रॉकेट पत्ते (अरुगुला)" } },
         { icon: "🥬", qty: { en: "Handful", hi: "एक मुट्ठी" }, name: { en: "Baby spinach", hi: "छोटी पालक" } },
-        { icon: "🫒", qty: { en: "5–6", hi: "5–6" }, name: { en: "Olives", hi: "ऑलिव" } },
         { icon: "🫗", qty: { en: "1½ tbsp", hi: "डेढ़ बड़ा चम्मच" }, name: { en: "Balsamic vinaigrette", hi: "बाल्समिक ड्रेसिंग" } },
         { group: { en: "Potatoes", hi: "आलू" } },
         { icon: "🥔", qty: { en: "250 g", hi: "250 ग्राम" }, name: { en: "Potatoes, boiled, peeled, salted (can be mashed or air-fried as fries)", hi: "आलू, उबले, छिले, नमक लगे (मैश कर सकते हैं या एयर फ्रायर में फ्राइज़ बना सकते हैं)" } }

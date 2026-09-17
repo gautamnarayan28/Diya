@@ -180,6 +180,7 @@ for Hindi) on dish names and step numbers ("01, 02…"); Inter + Noto Sans Devan
 with a bilingual right-aligned sub-label. Other themes still work via `?theme=` but only swap colours.
 
 ## Decisions log
+- 2026-09-17 · Gautam's edits to the trainer's recipes (deliberate deviations from the PDF): Easy Garlic Chicken Potatoes — olives removed from the salad.
 - 2026-09-16 · Ingredient audio removed (kept name + steps only): not useful to Diya, halved audio size (19 → 11 MB).
 - 2026-09-16 · Static site over an app/backend: zero cost, one link, editable by any agent. Sync via URL parameters instead of a database.
 - 2026-09-16 · Hindi primary / English secondary on the same screen instead of a hard language switch, so Gautam and Diya can read the same page together. A toggle swaps which is big.
