@@ -154,8 +154,13 @@ All colours are CSS variables in `css/style.css`; the base `:root` is the "warm"
 `js/app.js` sets `<html data-theme>` from `DEFAULT_THEME` (or `?theme=NAME` in the URL, remembered per phone).
 To change the site's look: edit `DEFAULT_THEME` in `js/app.js`. To compare all five side by side:
 run the dev server and open http://localhost:8766/dev/themes.html (dev only, harmless if deployed).
-2026-09-16: Gautam asked for sharper design + colour options; baseline was tightened (smaller radii,
-hairline card borders, uppercase eyebrows, square-ish pills) and the five themes were built. Awaiting his pick.
+2026-09-16: Gautam asked for sharper design + colour options; five themes were built.
+2026-09-17: Gautam chose **Ink & Tomato** and asked for classier elements. `ink` is now the `:root` base and
+`DEFAULT_THEME`. Design language: white paper, hairline rules, black primary button, tomato red only for
+numbers / active states / small-caps labels; serif display type (Fraunces for Latin, Tiro Devanagari Hindi
+for Hindi) on dish names and step numbers ("01, 02…"); Inter + Noto Sans Devanagari for body; macros as a
+4-cell stat strip; ingredients and steps as hairline lists (no boxed cards); section titles as small caps
+with a bilingual right-aligned sub-label. Other themes still work via `?theme=` but only swap colours.
 
 ## Decisions log
 - 2026-09-16 · Ingredient audio removed (kept name + steps only): not useful to Diya, halved audio size (19 → 11 MB).

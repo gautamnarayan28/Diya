@@ -23,7 +23,7 @@
   const byId = Object.fromEntries(M.recipes.map(r => [r.id, r]));
   const $app = document.getElementById("app");
   const THEMES = ["warm", "slate", "forest", "ink", "midnight"];   // see css/style.css
-  const DEFAULT_THEME = "warm";
+  const DEFAULT_THEME = "ink";   // chosen by Gautam 2026-09-17
   const LS = {
     theme: "dm.theme",
     lang: "dm.lang",
@@ -140,19 +140,22 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   function macroPills(r) {
-    return `<div class="pills">
-      <span class="pill">${r.kcal} ${u("kcal")}</span>
-      <span class="pill">P ${r.macros.p}g</span>
-      <span class="pill">C ${r.macros.c}g</span>
-      <span class="pill">F ${r.macros.f}g</span>
-      ${r.tags.includes("LC") ? `<span class="pill tag-lc">${lang === "hi" ? "लो कार्ब" : "Low carb"}</span>` : ""}
-      ${r.tags.includes("V") ? `<span class="pill tag-v">${lang === "hi" ? "शाकाहारी" : "Vegetarian"}</span>` : ""}
-    </div>`;
+    const tags = [
+      r.tags.includes("LC") ? `<span class="tag tag-lc">${lang === "hi" ? "लो कार्ब" : "Low carb"}</span>` : "",
+      r.tags.includes("V") ? `<span class="tag tag-v">${lang === "hi" ? "शाकाहारी" : "Vegetarian"}</span>` : ""
+    ].join("");
+    return `<div class="macros">
+      <span><b>${r.kcal}</b>${u("kcal")}</span>
+      <span><b>${r.macros.p}g</b>${lang === "hi" ? "प्रोटीन" : "Protein"}</span>
+      <span><b>${r.macros.c}g</b>${lang === "hi" ? "कार्ब" : "Carbs"}</span>
+      <span><b>${r.macros.f}g</b>${lang === "hi" ? "फ़ैट" : "Fat"}</span>
+    </div>${tags ? `<div class="tags">${tags}</div>` : ""}`;
   }
+  const h2 = key => `<h2>${UI[key][lang]}<span class="sub">${UI[key][other()]}</span></h2>`;
 
   function weekStrip() {
     const ti = weekdayIndex();
-    return `<div class="week-title"><h2>${u("thisWeek")}</h2><a href="#/plan">${lang === "hi" ? "बदलें" : "Edit"}</a></div>
+    return `<div class="week-title">${h2("thisWeek")}<a href="#/plan">${lang === "hi" ? "बदलें" : "Edit"}</a></div>
     <div class="week">${M.days.map((d, i) => {
       const { recipe, overridden } = dishFor(dateForWeekday(i));
       return `<a class="day ${i === ti ? "today" : ""}" href="#/day/${i}" title="${esc(T(recipe.name))}">
@@ -197,8 +200,8 @@
       <div class="meta">${macroPills(r)}</div>
       <button class="speak" id="speakBtn" type="button">${u("listen")}</button>
 
-      <h2>🧺 ${u("ingredients")}</h2>
-      <div class="card">
+      ${h2("ingredients")}
+      <div>
         <ul class="ing">${r.ingredients.map(i => i.group
           ? `<li class="group">${esc(T(i.group))} <span class="sub">· ${esc(S(i.group))}</span></li>`
           : `<li class="${i.optional ? "opt" : ""}">
@@ -208,9 +211,9 @@
         </ul>
       </div>
 
-      <h2>👩‍🍳 ${u("method")}</h2>
+      ${h2("method")}
       <p class="hint">${u("tapDone")}</p>
-      <div class="card">
+      <div>
         <ol class="steps ${lang === "hi" && hasClip(r.id, "step-0") ? "has-audio" : ""}" id="steps">${r.steps.map(s => {
           const i = stepIndex++;
           const clip = lang === "hi" && hasClip(r.id, `step-${i}`);
@@ -233,7 +236,7 @@
           <div class="e">${r.emoji}</div>
           <div class="t">${esc(T(r.name))}</div>
           <div class="s">${esc(S(r.name))}</div>
-          <div class="s">P ${r.macros.p}g · ${r.tags.includes("LC") ? "LC" : `C ${r.macros.c}g`}${r.tags.includes("V") ? " · 🌱" : ""}</div>
+          <div class="s macro">P ${r.macros.p}g · ${r.tags.includes("LC") ? "LC" : `C ${r.macros.c}g`}${r.tags.includes("V") ? " · VEG" : ""}</div>
         </a>`).join("")}
       </div>`;
   }
@@ -261,7 +264,7 @@
         </div>
       </div>
 
-      <h2>${u("override")}</h2>
+      ${h2("override")}
       <p class="hint">${u("overrideHelp")}</p>
       <div class="card">
         <div class="plan-row">
