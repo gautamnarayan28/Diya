@@ -77,8 +77,9 @@ Gautam changed the plan on his phone and it did not show on his laptop → real 
   First push on a device prompts for the PIN and remembers it (`dm.pin` in localStorage).
   If the API returns 503 (storage not configured) or is unreachable, the app silently stays in
   local-only mode and the Plan screen shows a note.
-- Status: code pushed 2026-09-17; **Gautam must create the Upstash store + `PLAN_PIN` in Vercel** for
-  sync to go live. Verify with `curl https://diya-gamma.vercel.app/api/plan` (JSON, not 503).
+- Status: **live since 2026-09-17.** Upstash store connected (Vercel injects `KV_REST_API_URL/TOKEN`),
+  `PLAN_PIN` set by Gautam (value not recorded here; it is in Vercel → Environment Variables).
+  Verified: GET returns the plan; POST without/with wrong PIN → 401. Test writes were reset to `defaultPlan`.
 
 ### Legacy link sync (still works, now also pushes to the server)
 
