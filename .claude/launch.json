@@ -3,13 +3,13 @@
   "configurations": [
     {
       "name": "dinner-menu",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1"],
-      "port": 8765
+      "url": "http://localhost:8766",
+      "port": 8766
     },
     {
-      "name": "dinner-menu-attach",
-      "url": "http://localhost:8766",
+      "name": "dinner-menu-spawn",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8766", "--bind", "127.0.0.1"],
       "port": 8766
     }
   ]

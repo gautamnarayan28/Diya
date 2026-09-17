@@ -2,35 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Theme comparison — dev only</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme picker — dev only</title>
 <style>
-  body { margin: 0; padding: 16px; background: #d7d7d7; font: 14px/1.4 -apple-system, system-ui, sans-serif; color: #222; }
-  h1 { font-size: 16px; margin: 0 0 12px; }
-  .row { display: flex; gap: 14px; margin-bottom: 18px; }
-  .phone { width: 375px; }
-  .phone h2 { font-size: 15px; margin: 0 0 6px; }
-  .phone p { margin: 0 0 8px; color: #555; font-size: 12px; min-height: 32px; }
-  iframe { width: 375px; height: 760px; border: 0; border-radius: 22px; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+  body { margin: 0; padding: 14px; background: #d9d9d9; font: 14px/1.4 -apple-system, system-ui, sans-serif; color: #222; }
+  h1 { font-size: 15px; margin: 0 0 10px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .tabs button { font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid #999; background: #fff; cursor: pointer; }
+  .tabs button.on { background: #222; color: #fff; border-color: #222; }
+  .desc { margin: 0 0 12px; color: #444; min-height: 20px; }
+  .phones { display: flex; gap: 16px; flex-wrap: wrap; }
+  iframe { width: 375px; height: 780px; border: 0; border-radius: 22px; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.2); }
+  code { background: #eee; padding: 1px 5px; border-radius: 4px; }
 </style>
 </head>
 <body>
-<h1>Theme comparison (served from the local dev server; not part of the site)</h1>
-<div class="row" id="row1"></div>
-<div class="row" id="row2"></div>
+<h1>Theme picker (local dev page, not part of the site). Pick one and tell the agent the letter; it sets <code>DEFAULT_THEME</code> in js/app.js.</h1>
+<div class="tabs" id="tabs"></div>
+<p class="desc" id="desc"></p>
+<div class="phones">
+  <iframe id="f1"></iframe>
+  <iframe id="f2"></iframe>
+</div>
 <script>
   const themes = [
     ["warm", "A · Warm (current)", "Terracotta header, cream background."],
-    ["slate", "B · Slate & Saffron", "Near-black header, stone background, amber buttons with dark text."],
+    ["slate", "B · Slate & Saffron", "Near-black header, stone-grey background, amber buttons with dark text."],
     ["forest", "C · Forest", "Deep green header, paper background, green accent."],
     ["ink", "D · Ink & Tomato", "White editorial look, hairlines, one red accent."],
-    ["midnight", "E · Midnight", "Dark mode, orange accent."]
+    ["midnight", "E · Midnight", "Dark mode, orange accent — for a dim kitchen."]
   ];
-  const base = location.origin;
-  const mk = (route) => themes.map(([id, name, desc]) => `
-    <div class="phone"><h2>${name}</h2><p>${desc}</p>
-      <iframe src="${base}/index.html?theme=${id}${route}"></iframe></div>`).join("");
-  document.getElementById("row1").innerHTML = mk("#/");
-  document.getElementById("row2").innerHTML = mk("#/recipe/chicken-curry");
+  const tabs = document.getElementById("tabs"), desc = document.getElementById("desc");
+  function show(id) {
+    const t = themes.find(x => x[0] === id);
+    desc.textContent = t[2];
+    [...tabs.children].forEach(b => b.classList.toggle("on", b.dataset.id === id));
+    document.getElementById("f1").src = `${location.origin}/index.html?theme=${id}#/`;
+    document.getElementById("f2").src = `${location.origin}/index.html?theme=${id}#/recipe/chicken-curry`;
+    history.replaceState(null, "", "#" + id);
+  }
+  themes.forEach(([id, name]) => {
+    const b = document.createElement("button"); b.textContent = name; b.dataset.id = id; b.onclick = () => show(id); tabs.appendChild(b);
+  });
+  show(themes.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : "slate");
 </script>
 </body>
 </html>

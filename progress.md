@@ -122,10 +122,12 @@ cd ~/Documents/dinner-menu && python3 -m http.server 8766
 ```
 Open http://localhost:8766 . Opening `index.html` directly from Finder also works, except share links (they need a real URL).
 
-Gotcha (Claude desktop app, 2026-09-16): a server launched through `.claude/launch.json` by the app
-returned 404 for every file — the app-spawned Python has no macOS permission to read `~/Documents`.
-Starting the same command from a Bash tool call / terminal works. `launch.json` therefore has a
-`dinner-menu-attach` entry that just attaches to an already-running server on :8766.
+Gotcha (Claude desktop app, 2026-09-16/17): a server launched through `.claude/launch.json` by the app
+cannot read `~/Documents` (macOS permission: 404 for every file, or `PermissionError: Operation not
+permitted` on startup). Starting the same command from a Bash tool call / terminal works. So the default
+`dinner-menu` launch config only **attaches** to http://localhost:8766 — start the server first with the
+command above (or via a Bash tool call: `nohup python3 -m http.server 8766 --bind 127.0.0.1 &` from the
+project folder). `dinner-menu-spawn` is the direct-spawn variant for machines without this restriction.
 
 Tested in the in-app browser at 375px: today / recipe / all / plan views, language toggle,
 `?p=` weekly-plan link, `?d=&dish=` one-day link (toast + week strip update). Read-aloud not
